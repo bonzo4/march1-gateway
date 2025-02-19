@@ -1,0 +1,18 @@
+networks:
+  march1_network:
+    external: true
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:3003"
+    environment:
+      - NODE_ENV=production
+    container_name: march1-gateway
+    restart: unless-stopped
+    env_file: ".env"
+    networks:
+      - march1_network
