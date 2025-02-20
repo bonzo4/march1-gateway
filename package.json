@@ -1,9 +1,16 @@
 {
   "name": "march1-gateway",
-  "version": "1.0.50",
+  "version": "1.0.0",
+  "module": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build --target=node ./src/index.ts --outfile=dist/index.js && bun run build:declaration",
+    "build:declaration": "tsc --emitDeclarationOnly --project tsconfig.types.json",
+    "postbuild": "rimraf tsconfig.types.tsbuildinfo",
+    "publish:build": "rimraf ./dist && bun run build && bun publish"
   },
   "dependencies": {
     "@elysiajs/eden": "^1.2.0",
@@ -14,7 +21,10 @@
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.8",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "rimraf": "^6.0.1"
   },
-  "module": "src/index.js"
+  "files": [
+    "dist/index.d.ts"
+  ]
 }
