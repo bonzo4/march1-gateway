@@ -13,9 +13,11 @@
     "publish:build": "rimraf ./dist && bun run build && bun publish"
   },
   "dependencies": {
+    "@elysiajs/cors": "^1.2.0",
     "@elysiajs/eden": "^1.2.0",
     "@elysiajs/jwt": "^1.2.0",
     "elysia": "^1.2.12",
+    "ioredis": "^5.5.0",
     "jsonwebtoken": "^9.0.2",
     "march1-auth": "^1.0.7"
   },

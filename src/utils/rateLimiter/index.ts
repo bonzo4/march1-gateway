@@ -1,12 +1,13 @@
-import { Elysia, error } from "elysia";
-import { authRouter } from "./route/auth";
-import { rateLimiter, redis } from "./utils/rateLimiter";
+import Elysia, { error } from "elysia";
+import Redis from "ioredis";
 import {
-  RATE_LIMIT_WINDOW,
   RATE_LIMIT_MAX_REQUESTS,
-} from "./utils/constants/rateLimits";
+  RATE_LIMIT_WINDOW,
+} from "../constants/rateLimits";
 
-const gatewayApi = new Elysia()
+export const redis = new Redis(process.env.RATE_LIMITER_CACHE_PORT!);
+
+export const rateLimiter = new Elysia({ name: "rateLimiter" })
   .decorate("redis", redis)
   .onBeforeHandle(async ({ redis, request, server, set }) => {
     if (!server) {
@@ -23,6 +24,7 @@ const gatewayApi = new Elysia()
     const key = `rate-limit:${ip}`;
 
     const currentRequests = await redis.incr(key);
+    console.log(currentRequests);
 
     if (currentRequests === 1) {
       redis.expire(key, RATE_LIMIT_WINDOW);
@@ -32,12 +34,4 @@ const gatewayApi = new Elysia()
       set.status = "Too Many Requests";
       throw error(set.status, "Requests amount exceeded");
     }
-  })
-  .get("/", () => {
-    return "test";
-  })
-  .use(authRouter)
-  .listen(process.env.PORT!);
-
-type GatewayApi = typeof gatewayApi;
-export type { GatewayApi };
+  });

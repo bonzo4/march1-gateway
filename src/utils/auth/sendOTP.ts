@@ -1,6 +1,6 @@
 import { t } from "elysia";
 import { authApi } from ".";
-import { JwtType } from "../jwt";
+import type { JwtType } from "../types/jwt";
 
 export const sendOTPBody = t.Object({
   phoneNumber: t.String(),
