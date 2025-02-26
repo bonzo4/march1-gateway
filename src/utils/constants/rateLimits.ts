@@ -1,5 +1,5 @@
 export const RATE_LIMIT_WINDOW = 60;
 export const RATE_LIMIT_MAX_REQUESTS = 1;
 
-export const AUTH_RATE_LIMIT_WINDOW = 60;
-export const AUTH_RATE_LIMIT_MAX_REQUESTS = 100;
+export const SEND_OTP_RATE_LIMIT_WINDOW = 60 * 60;
+export const SEND_OTP_RATE_LIMIT_MAX_REQUESTS = 5;
