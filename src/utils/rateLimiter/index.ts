@@ -5,10 +5,10 @@ import {
   RATE_LIMIT_WINDOW,
 } from "../constants/rateLimits";
 
-export const redis = new Redis(process.env.RATE_LIMITER_CACHE_PORT!);
+export const redisClient = new Redis(process.env.RATE_LIMITER_CACHE_PORT!);
 
 export const rateLimiter = new Elysia({ name: "rateLimiter" })
-  .decorate("redis", redis)
+  .decorate("redis", redisClient)
   .onBeforeHandle(async ({ redis, request, server, set }) => {
     if (!server) {
       set.status = "Bad Request";

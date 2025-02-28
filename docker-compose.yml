@@ -2,6 +2,9 @@ networks:
   march1_network:
     external: true
 
+volumes:
+  redis_data:
+
 services:
   app:
     build:
@@ -16,3 +19,11 @@ services:
     env_file: ".env"
     networks:
       - march1_network
+  redis:
+    image: redis:latest
+    container_name: march-1-ratelimiter-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped

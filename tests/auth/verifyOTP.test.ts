@@ -1,13 +1,14 @@
 import { describe, expect, test, mock, it } from "bun:test";
-import { sendOTP } from "../../src/utils/auth/sendOTP";
+import { verifyOTP } from "../../src/utils/auth/verifyOTP";
 import jwt from "@elysiajs/jwt";
-import { SendOTPRoute } from "march1-auth";
-import { sendOTPRateLimit } from "../../src/utils/rateLimiter/sendOTPRateLimit";
+import { VerifyOTPRoute } from "march1-auth";
+import { verifyOTPRateLimit } from "../../src/utils/rateLimiter/verifyOTPRateLimit";
 import { RateLimiterMock } from "../../src/utils/rateLimiter/mock";
-import { SEND_OTP_RATE_LIMIT_MAX_REQUESTS } from "../../src/utils/constants/rateLimits";
+import { VERIFY_OTP_RATE_LIMIT_MAX_REQUESTS } from "../../src/utils/constants/rateLimits";
 
 const body = {
   phoneNumber: "",
+  code: "",
 };
 
 const jwtAuth = jwt({
@@ -15,9 +16,22 @@ const jwtAuth = jwt({
   secret: process.env.AUTH_JWT_SECRET!,
 }).decorator.jwtAuth;
 
-const sendOTPRoute: SendOTPRoute = async ({ token }: { token: string }) => {
+const verifyOTPRoute: VerifyOTPRoute = async ({ token }: { token: string }) => {
   return {
-    data: "Code Sent",
+    data: {
+      status: true,
+      token: "1",
+      user: {
+        id: "1",
+        createdAt: new Date(),
+        email: "@",
+        emailVerified: false,
+        name: "test",
+        phoneNumber: "1",
+        phoneNumberVerified: true,
+        updatedAt: new Date(),
+      },
+    },
     error: null,
     response: new Response(),
     status: 200,
@@ -25,7 +39,7 @@ const sendOTPRoute: SendOTPRoute = async ({ token }: { token: string }) => {
   };
 };
 
-const sendOTPRouteError: SendOTPRoute = async ({
+const verifyOTPRouteError: VerifyOTPRoute = async ({
   token,
 }: {
   token: string;
@@ -42,30 +56,43 @@ const sendOTPRouteError: SendOTPRoute = async ({
   };
 };
 
-describe("Send OTP Route", () => {
+describe("Verify OTP Route", () => {
   it("Should send API request", async () => {
-    const res = await sendOTP({
+    const res = await verifyOTP({
       body,
       jwtAuth,
       set: {},
       ip: "::1",
-      sendOTPRoute,
-      rateLimit: sendOTPRateLimit,
+      verifyOTPRoute,
+      rateLimit: verifyOTPRateLimit,
       redis: new RateLimiterMock(),
     });
 
-    expect(res).toBe("Code Sent");
+    expect(res).toEqual({
+      status: true,
+      token: "1",
+      user: {
+        id: "1",
+        createdAt: new Date(),
+        email: "@",
+        emailVerified: false,
+        name: "test",
+        phoneNumber: "1",
+        phoneNumberVerified: true,
+        updatedAt: new Date(),
+      },
+    });
   });
 
   it("Should throw error on API request fail", async () => {
     try {
-      await sendOTP({
+      await verifyOTP({
         body,
         jwtAuth,
         set: {},
         ip: "::1",
-        sendOTPRoute: sendOTPRouteError,
-        rateLimit: sendOTPRateLimit,
+        verifyOTPRoute: verifyOTPRouteError,
+        rateLimit: verifyOTPRateLimit,
         redis: new RateLimiterMock(),
       });
     } catch (e: any) {
@@ -77,14 +104,14 @@ describe("Send OTP Route", () => {
     let e: any | undefined;
     try {
       const redis = new RateLimiterMock();
-      for (let i = 0; i < SEND_OTP_RATE_LIMIT_MAX_REQUESTS + 1; i++) {
-        await sendOTP({
+      for (let i = 0; i < VERIFY_OTP_RATE_LIMIT_MAX_REQUESTS + 1; i++) {
+        await verifyOTP({
           body,
           jwtAuth,
           set: {},
           ip: "::1",
-          sendOTPRoute,
-          rateLimit: sendOTPRateLimit,
+          verifyOTPRoute,
+          rateLimit: verifyOTPRateLimit,
           redis,
         });
       }

@@ -3,7 +3,7 @@ import type { ElysiaCookie } from "elysia/cookies";
 import type { HTTPHeaders } from "elysia/types";
 
 export type SetType = {
-  headers: HTTPHeaders;
+  headers?: HTTPHeaders;
   status?: number | keyof StatusMap;
   redirect?: string;
   /**
