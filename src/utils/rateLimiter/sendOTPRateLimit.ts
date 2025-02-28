@@ -14,14 +14,27 @@ type Options = {
   phoneNumber: string;
 };
 
-export async function sendOTPRateLimit({ redis, ip, set }: Options) {
-  const key = `rate-limit:${ip}`;
+export async function sendOTPRateLimit({
+  redis,
+  ip,
+  set,
+  phoneNumber,
+}: Options) {
+  const ipKey = `rate-limit-send-otp:${ip}`;
+  const phoneNumberKey = `rate-limit-send-otp${phoneNumber}`;
 
-  const currentRequests = await redis.incr(key);
-  if (currentRequests === 1) {
-    redis.expire(key, SEND_OTP_RATE_LIMIT_WINDOW);
+  const ipRequests = await redis.incr(ipKey);
+  const phoneNumberRequests = await redis.incr(phoneNumberKey);
+  if (ipRequests === 1) {
+    redis.expire(ipKey, SEND_OTP_RATE_LIMIT_WINDOW);
   }
-  if (currentRequests > SEND_OTP_RATE_LIMIT_MAX_REQUESTS) {
+  if (phoneNumberRequests === 1) {
+    redis.expire(phoneNumberKey, SEND_OTP_RATE_LIMIT_WINDOW);
+  }
+  if (
+    ipRequests > SEND_OTP_RATE_LIMIT_MAX_REQUESTS ||
+    phoneNumberRequests > SEND_OTP_RATE_LIMIT_MAX_REQUESTS
+  ) {
     set.status = "Too Many Requests";
     throw error(set.status);
   }

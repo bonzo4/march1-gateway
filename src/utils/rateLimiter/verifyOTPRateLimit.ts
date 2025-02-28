@@ -20,13 +20,21 @@ export async function verifyOTPRateLimit({
   set,
   phoneNumber,
 }: Options) {
-  const key = `rate-limit:${ip}`;
+  const ipKey = `rate-limit-verify-otp:${ip}`;
+  const phoneNumberKey = `rate-limit-verify-otp${phoneNumber}`;
 
-  const currentRequests = await redis.incr(key);
-  if (currentRequests === 1) {
-    redis.expire(key, VERIFY_OTP_RATE_LIMIT_WINDOW);
+  const ipRequests = await redis.incr(ipKey);
+  const phoneNumberRequests = await redis.incr(phoneNumberKey);
+  if (ipRequests === 1) {
+    redis.expire(ipKey, VERIFY_OTP_RATE_LIMIT_WINDOW);
   }
-  if (currentRequests > VERIFY_OTP_RATE_LIMIT_MAX_REQUESTS) {
+  if (phoneNumberRequests === 1) {
+    redis.expire(phoneNumberKey, VERIFY_OTP_RATE_LIMIT_WINDOW);
+  }
+  if (
+    ipRequests > VERIFY_OTP_RATE_LIMIT_MAX_REQUESTS ||
+    phoneNumberRequests > VERIFY_OTP_RATE_LIMIT_MAX_REQUESTS
+  ) {
     set.status = "Too Many Requests";
     throw error(set.status);
   }
