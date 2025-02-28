@@ -19,9 +19,10 @@
     "elysia": "^1.2.12",
     "ioredis": "^5.5.0",
     "jsonwebtoken": "^9.0.2",
-    "march1-auth": "^1.0.7"
+    "march1-auth": "^1.0.10"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.4",
     "@types/jsonwebtoken": "^9.0.8",
     "bun-types": "latest",
     "rimraf": "^6.0.1"

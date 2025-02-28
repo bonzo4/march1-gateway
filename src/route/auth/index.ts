@@ -3,6 +3,10 @@ import { sendOTP, sendOTPBody } from "../../utils/auth/sendOTP";
 import { verifyOTP, verifyOTPBody } from "../../utils/auth/verifyOTP";
 import { jwt } from "@elysiajs/jwt";
 import { authApi } from "@/utils/auth";
+import { deriveIp } from "@/utils/derive/ip";
+import { sendOTPRateLimit } from "@/utils/rateLimiter/sendOTPRateLimit";
+import { redisClient } from "@/utils/rateLimiter";
+import { verifyOTPRateLimit } from "@/utils/rateLimiter/verifyOTPRateLimit";
 
 export const authRouter = new Elysia({ prefix: "/auth" })
   .use(
@@ -12,16 +16,7 @@ export const authRouter = new Elysia({ prefix: "/auth" })
       exp: "1d",
     })
   )
-  .derive(({ set, server, request }) => {
-    const ip = server?.requestIP(request);
-    if (!ip) {
-      set.status = "Bad Request";
-      throw error(set.status, "Invalid IP");
-    }
-    return {
-      ip,
-    };
-  })
+  .derive(({ set, server, request }) => deriveIp({ set, server, request }))
   .post(
     "/sendOTP",
     ({ body, jwtAuth, set, ip }) =>
@@ -30,12 +25,27 @@ export const authRouter = new Elysia({ prefix: "/auth" })
         jwtAuth,
         set,
         ip,
-        authApiFunction: authApi.sendOTP.post,
+        sendOTPRoute: authApi.sendOTP.post,
+        rateLimit: sendOTPRateLimit,
+        redis: redisClient,
       }),
     {
       body: sendOTPBody,
     }
   )
-  .post("/verifyOTP", verifyOTP, {
-    body: verifyOTPBody,
-  });
+  .post(
+    "/verifyOTP",
+    ({ body, jwtAuth, set, ip }) =>
+      verifyOTP({
+        body,
+        jwtAuth,
+        set,
+        ip,
+        verifyOTPRoute: authApi.verifyOTP.post,
+        rateLimit: verifyOTPRateLimit,
+        redis: redisClient,
+      }),
+    {
+      body: verifyOTPBody,
+    }
+  );
