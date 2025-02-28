@@ -1,0 +1,14 @@
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+name: test
+jobs:
+  run-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+
+      - run: echo "AUTH_JWT_SECRET=auth-jwt-secret" > .env
+      - run: bun install
+      - run: bun test
