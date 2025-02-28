@@ -17,9 +17,10 @@ export const authRouter = new Elysia({ prefix: "/auth" })
     })
   )
   .derive(({ set, server, request }) => deriveIp({ set, server, request }))
+  .decorate("redis", redisClient)
   .post(
     "/sendOTP",
-    ({ body, jwtAuth, set, ip }) =>
+    ({ body, jwtAuth, set, ip, redis }) =>
       sendOTP({
         body,
         jwtAuth,
@@ -27,7 +28,7 @@ export const authRouter = new Elysia({ prefix: "/auth" })
         ip,
         sendOTPRoute: authApi.sendOTP.post,
         rateLimit: sendOTPRateLimit,
-        redis: redisClient,
+        redis,
       }),
     {
       body: sendOTPBody,
@@ -35,7 +36,7 @@ export const authRouter = new Elysia({ prefix: "/auth" })
   )
   .post(
     "/verifyOTP",
-    ({ body, jwtAuth, set, ip }) =>
+    ({ body, jwtAuth, set, ip, redis }) =>
       verifyOTP({
         body,
         jwtAuth,
@@ -43,7 +44,7 @@ export const authRouter = new Elysia({ prefix: "/auth" })
         ip,
         verifyOTPRoute: authApi.verifyOTP.post,
         rateLimit: verifyOTPRateLimit,
-        redis: redisClient,
+        redis,
       }),
     {
       body: verifyOTPBody,
